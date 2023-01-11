@@ -44,13 +44,13 @@ def telegram_bot(token):
         keyboard = types.InlineKeyboardMarkup()  # наша клавиатура
         key_yes = types.InlineKeyboardButton(text='🌚 Да, вперед', callback_data='yes') # кнопка «Да»
         keyboard.add(key_yes)  # добавляем кнопку в клавиатуру
-        bot.send_message(message.chat.id, WELCOME_MESSAGE, reply_markup=keyboard)
+        bot.send_message(message.chat.id, WELCOME_MESSAGE, reply_markup=keyboard, disable_web_page_preview=True)
 
     @bot.message_handler(commands=["help"])
     def help_message(message):
         global main_menu
         if check_accept(message):
-            bot.send_message(message.from_user.id, HELP_MESSAGE, reply_markup=main_menu)
+            bot.send_message(message.from_user.id, HELP_MESSAGE, reply_markup=main_menu, disable_web_page_preview=True)
 
     @bot.callback_query_handler(func=lambda call: True)
     def callback_worker(call):
@@ -65,7 +65,7 @@ def telegram_bot(token):
                 bot.reply_to(call.message, '🤖 Упс, попробуй снова\n/start')
         elif call.data == "cancel":
             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                  text=main_media_group[call.message.chat.id][0])
+                                  text=main_media_group[call.message.chat.id][0], disable_web_page_preview=True)
             main_media_group[call.message.chat.id] = None
             bot.send_message(call.message.chat.id,
                              "Введите текстовый запрос\n\n *Желательно на английском языке для лучшего результата")
@@ -73,13 +73,15 @@ def telegram_bot(token):
         elif call.data == "upgrade1":
             main_media_group[call.message.chat.id][3] = 1
             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                  text=main_media_group[call.message.chat.id][0])
+                                  text=f'👁 {main_media_group[call.message.chat.id][0]}\n\n[Третий Глаз](https://t.me/+BPwAeq0kYfxkZjMy)',
+                                  parse_mode='MarkdownV2', disable_web_page_preview=True)
             bot.send_message(call.message.chat.id, "🎯 Минуточку, улучшаю первое изображение")
             generate_img(call.message)
         elif call.data == "upgrade2":
             main_media_group[call.message.chat.id][3] = 2
             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                  text=main_media_group[call.message.chat.id][0])
+                                  text=f'👁 {main_media_group[call.message.chat.id][0]}\n\n[Третий Глаз](https://t.me/+BPwAeq0kYfxkZjMy)',
+                                  parse_mode='MarkdownV2', disable_web_page_preview=True)
             bot.send_message(call.message.chat.id, "🎯 Минуточку, улучшаю второе изображение")
             generate_img(call.message)
 
@@ -91,7 +93,7 @@ def telegram_bot(token):
                 bot.send_message(message.from_user.id, "Введите текстовый запрос\n\n *Желательно на английском языке для лучшего результата")
                 bot.register_next_step_handler(message, generate_img)
         elif message.text == "👁 О проекте":
-            bot.send_message(message.from_user.id, ABOUT_MESSAGE, reply_markup=main_menu, parse_mode='MarkdownV2')
+            bot.send_message(message.from_user.id, ABOUT_MESSAGE, reply_markup=main_menu, parse_mode='MarkdownV2', disable_web_page_preview=True)
         elif message.text == "👨🏻‍💻 Контакты":
             bot.send_message(message.from_user.id, CONTACTS_MESSAGE, reply_markup=main_menu)
         else:
@@ -113,54 +115,68 @@ def telegram_bot(token):
             media_group=[]
 
             main = main_media_group.get(message.chat.id)
+            if message.text == "👁 О проекте":
+                bot.send_message(message.from_user.id, ABOUT_MESSAGE, reply_markup=main_menu, parse_mode='MarkdownV2', disable_web_page_preview=True)
+            elif message.text == "👨🏻‍💻 Контакты":
+                bot.send_message(message.from_user.id, CONTACTS_MESSAGE, reply_markup=main_menu)
+            elif message.text == "🚀 Сгенерировать изображение":
+                bot.send_message(message.from_user.id,
+                                 "Введите текстовый запрос\n\n *Желательно на английском языке для лучшего результата")
+                bot.register_next_step_handler(message, generate_img)
+            else:
+                if main is None:
+                    msg = bot.send_message(message.from_user.id, "⚙️ Минутку, генерирую изображение")
+                    prompt = message.text
+                    response = openai.Image.create(
+                        prompt=prompt,
+                        n=2,
+                        size="1024x1024"
+                    )
 
-            if main is None:
-                msg = bot.send_message(message.from_user.id, "⚙️ Минутку, генерирую изображение")
-                prompt = message.text
-                response = openai.Image.create(
-                    prompt=prompt,
-                    n=2,
-                    size="1024x1024"
-                )
+                    media_group.append(InputMediaPhoto(media=response['data'][0]['url']))
+                    media_group.append(InputMediaPhoto(media=response['data'][1]['url']))
 
-                media_group.append(InputMediaPhoto(media=response['data'][0]['url']))
-                media_group.append(InputMediaPhoto(media=response['data'][1]['url']))
+                    main_media_group[message.chat.id] = [prompt, response['data'][0]['url'], response['data'][1]['url'], 0]
 
-                main_media_group[message.chat.id] = [prompt, response['data'][0]['url'], response['data'][1]['url'], 0]
+                    bot.send_media_group(chat_id=message.chat.id, media=media_group)
+                    bot.send_message(message.from_user.id,
+                                     text=f'👁 {prompt}\n\n[Третий Глаз](https://t.me/+BPwAeq0kYfxkZjMy)',
+                                     parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup=keyboard)
+                    bot.delete_message(message.chat.id, msg.message_id)
 
-                bot.send_media_group(chat_id=message.chat.id, media=media_group)
-                bot.send_message(message.from_user.id, prompt, reply_markup=keyboard)
-                bot.delete_message(message.chat.id, msg.message_id)
+                elif main[3] == 1:
 
-            elif main[3] == 1:
+                    r = requests.get(main[1])
+                    with open(f'img/{message.chat.id}.png', 'wb') as f:
+                        f.write(r.content)
+                    main_media_group[message.chat.id] = None
+                    response = openai.Image.create_variation(
+                        image=open(f'img/{message.chat.id}.png', 'rb'),
+                        n=1,
+                        size="1024x1024"
+                    )
+                    os.remove(f'img/{message.chat.id}.png')
+                    image_url = response['data'][0]['url']
+                    bot.send_photo(chat_id=message.chat.id, photo=image_url,
+                                   caption=f'👁 {main[0]}\n\n[Третий Глаз](https://t.me/+BPwAeq0kYfxkZjMy)',
+                                   parse_mode='MarkdownV2', reply_markup=main_menu)
 
-                r = requests.get(main[1])
-                with open(f'img/{message.chat.id}.png', 'wb') as f:
-                    f.write(r.content)
-                main_media_group[message.chat.id] = None
-                response = openai.Image.create_variation(
-                    image=open(f'img/{message.chat.id}.png', 'rb'),
-                    n=1,
-                    size="1024x1024"
-                )
-                os.remove(f'img/{message.chat.id}.png')
-                image_url = response['data'][0]['url']
-                bot.send_photo(chat_id=message.chat.id, photo=image_url, caption=main[0], reply_markup=main_menu)
+                elif main[3] == 2:
 
-            elif main[3] == 2:
-
-                r = requests.get(main[2])
-                with open(f'img/{message.chat.id}.png', 'wb') as f:
-                    f.write(r.content)
-                main_media_group[message.chat.id] = None
-                response = openai.Image.create_variation(
-                    image=open(f'img/{message.chat.id}.png', 'rb'),
-                    n=1,
-                    size="1024x1024"
-                )
-                os.remove(f'img/{message.chat.id}.png')
-                image_url = response['data'][0]['url']
-                bot.send_photo(chat_id=message.chat.id, photo=image_url, caption=main[0], reply_markup=main_menu)
+                    r = requests.get(main[2])
+                    with open(f'img/{message.chat.id}.png', 'wb') as f:
+                        f.write(r.content)
+                    main_media_group[message.chat.id] = None
+                    response = openai.Image.create_variation(
+                        image=open(f'img/{message.chat.id}.png', 'rb'),
+                        n=1,
+                        size="1024x1024"
+                    )
+                    os.remove(f'img/{message.chat.id}.png')
+                    image_url = response['data'][0]['url']
+                    bot.send_photo(chat_id=message.chat.id, photo=image_url,
+                                   caption=f'👁 {main[0]}\n\n[Третий Глаз](https://t.me/+BPwAeq0kYfxkZjMy)',
+                                   parse_mode='MarkdownV2', reply_markup=main_menu)
 
     bot.polling()
 
