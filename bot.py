@@ -67,7 +67,9 @@ def telegram_bot(token):
             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                   text=main_media_group[call.message.chat.id][0])
             main_media_group[call.message.chat.id] = None
-            bot.send_message(call.message.chat.id, "🌝 Чем могу помочь?", reply_markup=main_menu)
+            bot.send_message(call.message.chat.id,
+                             "Введите текстовый запрос\n\n *Желательно на английском языке для лучшего результата")
+            bot.register_next_step_handler(call.message, generate_img)
         elif call.data == "upgrade1":
             main_media_group[call.message.chat.id][3] = 1
             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
