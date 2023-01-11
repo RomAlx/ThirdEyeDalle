@@ -59,13 +59,14 @@ def telegram_bot(token):
 
         if call.data == "yes":
             try:
+                bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=CHECK_MESSAGE)
                 bot.send_message(call.message.chat.id, "🌝 Чем могу помочь?", reply_markup=main_menu)
             except Exception as e:
                 bot.reply_to(call.message, '🤖 Упс, попробуй снова\n/start')
         if call.data == "member":
             if bot.get_chat_member(-1001534006781, call.message.chat.id).status == "left":
                 try:
-                    bot.send_message(call.message.chat.id, "🌝 Чем могу помочь?", reply_markup=main_menu)
+                    bot.send_message(call.message.chat.id, "😢 Вы не подписаны на наш канал", reply_markup=main_menu)
                 except Exception as e:
                     bot.reply_to(call.message, '🤖 Упс, попробуй снова\n/start')
             else:
