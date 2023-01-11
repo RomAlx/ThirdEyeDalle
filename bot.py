@@ -6,7 +6,7 @@ from telebot import types
 from telebot.types import InputMediaPhoto
 
 from auth_data import Token_Bot, Secret_OpenAI
-from texts import WELCOME_MESSAGE, HELP_MESSAGE, ABOUT_MESSAGE, CONTACTS_MESSAGE
+from texts import WELCOME_MESSAGE, HELP_MESSAGE, ABOUT_MESSAGE, CONTACTS_MESSAGE, CHECK_MESSAGE
 
 openai.api_key = Secret_OpenAI
 
@@ -29,10 +29,9 @@ def telegram_bot(token):
             user_id = message.chat.id
             if bot.get_chat_member(-1001534006781, user_id).status == "left":
                 keyboard = types.InlineKeyboardMarkup()  # наша клавиатура
-                key_yes = types.InlineKeyboardButton(text='✅ Я вступил!', callback_data='yes')  # кнопка «Да»
+                key_yes = types.InlineKeyboardButton(text='✅ Я вступил!', callback_data='member')  # кнопка «Да»
                 keyboard.add(key_yes)  # добавляем кнопку в клавиатуру
-                bot.send_message(message.chat.id, "🔲 Нужно подписаться на канал\n\nhttps://t.me/+BPwAeq0kYfxkZjMy",
-                                 reply_markup=keyboard)
+                bot.send_message(message.chat.id, CHECK_MESSAGE, reply_markup=keyboard)
                 return False
             else:
                 return True
@@ -63,6 +62,18 @@ def telegram_bot(token):
                 bot.send_message(call.message.chat.id, "🌝 Чем могу помочь?", reply_markup=main_menu)
             except Exception as e:
                 bot.reply_to(call.message, '🤖 Упс, попробуй снова\n/start')
+        if call.data == "member":
+            if bot.get_chat_member(-1001534006781, call.message.chat.id).status == "left":
+                try:
+                    bot.send_message(call.message.chat.id, "🌝 Чем могу помочь?", reply_markup=main_menu)
+                except Exception as e:
+                    bot.reply_to(call.message, '🤖 Упс, попробуй снова\n/start')
+            else:
+                try:
+                    bot.send_message(call.message.chat.id, "🖤 Спасибо!", reply_markup=main_menu)
+                    bot.send_message(call.message.chat.id, "🌝 Чем могу помочь?", reply_markup=main_menu)
+                except Exception as e:
+                    bot.reply_to(call.message, '🤖 Упс, попробуй снова\n/start')
         elif call.data == "cancel":
             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                   text=main_media_group[call.message.chat.id][0], disable_web_page_preview=True)
