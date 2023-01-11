@@ -1,11 +1,14 @@
 version: "3"
 
 services:
-  web:
-    build: .
+  webapp:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    restart: unless-stopped
     container_name: dalle-bot
     command: python bot.py
     ports:
-      - 591:591
+      - "591:591"
     volumes:
-      - ./:/app
+      - ./:/usr/src/dalle-bot
