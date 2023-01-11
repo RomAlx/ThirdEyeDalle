@@ -1,0 +1,2 @@
+Token_Bot = '5921929527:AAEV1avrfh7_Z-NAp64ik-UmPuH2HeybkGU'
+Secret_OpenAI = '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'

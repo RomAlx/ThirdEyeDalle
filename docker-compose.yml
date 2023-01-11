@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  web:
+    build: .
+    container_name: dalle-bot
+    command: python bot.py
+    ports:
+      - 591:591
+    volumes:
+      - ./:/app
