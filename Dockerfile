@@ -9,5 +9,3 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-ENTRYPOINT ["sh", "/usr/src/chatgpt-bot/entrypoint.sh"]
-

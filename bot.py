@@ -59,17 +59,8 @@ def telegram_bot(token):
         global main_menu
 
         if call.data == "yes":
-
             try:
-                user_id = call.message.chat.id
-                if bot.get_chat_member(-1001534006781, user_id).status == "left":
-                    keyboard = types.InlineKeyboardMarkup()  # наша клавиатура
-                    key_yes = types.InlineKeyboardButton(text='✅ Я вступил!', callback_data='yes')  # кнопка «Да»
-                    keyboard.add(key_yes)  # добавляем кнопку в клавиатуру
-                    bot.send_message(call.message.chat.id, "🔲 Нужно подписаться на канал\n\nhttps://t.me/+MILF2JIPHMI2ZmY6",
-                                     reply_markup=keyboard)
-                else:
-                    bot.send_message(call.message.chat.id, "🌝 Чем могу помочь?", reply_markup=main_menu)
+                bot.send_message(call.message.chat.id, "🌝 Чем могу помочь?", reply_markup=main_menu)
             except Exception as e:
                 bot.reply_to(call.message, '🤖 Упс, попробуй снова\n/start')
         elif call.data == "cancel":
@@ -93,16 +84,16 @@ def telegram_bot(token):
     @bot.message_handler(content_types=['text'])
     def get_text_messages(message):
         global main_menu
-        if check_accept(message):
-            if message.text == "🚀 Сгенерировать изображение":
+        if message.text == "🚀 Сгенерировать изображение":
+            if check_accept(message):
                 bot.send_message(message.from_user.id, "Введите текстовый запрос\n\n *Желательно на английском языке для лучшего результата")
                 bot.register_next_step_handler(message, generate_img)
-            elif message.text == "👁 О проекте":
-                bot.send_message(message.from_user.id, ABOUT_MESSAGE, reply_markup=main_menu, parse_mode='MarkdownV2')
-            elif message.text == "👨🏻‍💻 Контакты":
-                bot.send_message(message.from_user.id, CONTACTS_MESSAGE, reply_markup=main_menu)
-            else:
-                bot.send_message(message.from_user.id, "💁‍♂️ Я такой команды не знаю\n Если нужна подсказка, то напишите /help.", reply_markup=main_menu)
+        elif message.text == "👁 О проекте":
+            bot.send_message(message.from_user.id, ABOUT_MESSAGE, reply_markup=main_menu, parse_mode='MarkdownV2')
+        elif message.text == "👨🏻‍💻 Контакты":
+            bot.send_message(message.from_user.id, CONTACTS_MESSAGE, reply_markup=main_menu)
+        else:
+            bot.send_message(message.from_user.id, "💁‍♂️ Я такой команды не знаю\n Если нужна подсказка, то напишите /help.", reply_markup=main_menu)
 
     def generate_img(message):
         global main_menu
