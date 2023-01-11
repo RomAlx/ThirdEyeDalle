@@ -3,7 +3,7 @@ import openai
 import requests
 import os
 from telebot import types
-from telebot.types import InputMediaPhoto, ReplyKeyboardRemove
+from telebot.types import InputMediaPhoto
 
 from auth_data import Token_Bot, Secret_OpenAI
 from texts import WELCOME_MESSAGE, HELP_MESSAGE, ABOUT_MESSAGE, CONTACTS_MESSAGE, CHECK_MESSAGE
@@ -12,12 +12,16 @@ openai.api_key = Secret_OpenAI
 
 main_media_group = {}
 
-main_menu=types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 item1=types.KeyboardButton("🚀 Сгенерировать изображение")
 item2=types.KeyboardButton("👁 О проекте")
 item3=types.KeyboardButton("👨🏻‍💻 Контакты")
+
+main_menu=types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 main_menu.add(item1)
 main_menu.row(item2, item3)
+
+special_menu=types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+special_menu.row(item2, item3)
 
 
 def telegram_bot(token):
@@ -56,6 +60,7 @@ def telegram_bot(token):
 
         global main_media_group
         global main_menu
+        global special_menu
 
         if call.data == "yes":
             try:
@@ -83,7 +88,7 @@ def telegram_bot(token):
                                   text=main_media_group[call.message.chat.id][0], disable_web_page_preview=True)
             main_media_group[call.message.chat.id] = None
             bot.send_message(call.message.chat.id,
-                             "Введите текстовый запрос\n\n *Желательно на английском языке для лучшего результата")
+                             "Введите текстовый запрос\n\n *Желательно на английском языке для лучшего результата", reply_markup=special_menu)
             bot.register_next_step_handler(call.message, generate_img)
         elif call.data == "upgrade1":
             main_media_group[call.message.chat.id][3] = 1
@@ -103,9 +108,11 @@ def telegram_bot(token):
     @bot.message_handler(content_types=['text'])
     def get_text_messages(message):
         global main_menu
+        global special_menu
         if message.text == "🚀 Сгенерировать изображение":
             if check_accept(message):
-                bot.send_message(message.from_user.id, "Введите текстовый запрос\n\n *Желательно на английском языке для лучшего результата")
+                bot.send_message(message.from_user.id, "Введите текстовый запрос\n\n *Желательно на английском языке для лучшего результата",
+                                 reply_markup=special_menu)
                 bot.register_next_step_handler(message, generate_img)
         elif message.text == "👁 О проекте":
             bot.send_message(message.from_user.id, ABOUT_MESSAGE, reply_markup=main_menu, parse_mode='MarkdownV2', disable_web_page_preview=True)
@@ -117,6 +124,14 @@ def telegram_bot(token):
     def generate_img(message):
         global main_menu
         global main_media_group
+        global special_menu
+
+        keyboard = types.InlineKeyboardMarkup()  # наша клавиатура
+        key_cancel = types.InlineKeyboardButton(text='🕹 Сгенерировать ещё', callback_data='cancel')
+        key_upgrade1 = types.InlineKeyboardButton(text='1️⃣ Улучшить', callback_data='upgrade1')
+        key_upgrade2 = types.InlineKeyboardButton(text='2️⃣ Улучшить', callback_data='upgrade2')
+        keyboard.row(key_upgrade1, key_upgrade2)
+        keyboard.add(key_cancel)
 
         if check_accept(message):
 
@@ -124,25 +139,18 @@ def telegram_bot(token):
 
             main = main_media_group.get(message.chat.id)
             if message.text == "👁 О проекте":
-                bot.send_message(message.from_user.id, ABOUT_MESSAGE, reply_markup=main_menu, parse_mode='MarkdownV2', disable_web_page_preview=True)
+                bot.send_message(message.from_user.id, ABOUT_MESSAGE, reply_markup=main_menu, parse_mode='MarkdownV2',
+                                 disable_web_page_preview=True)
             elif message.text == "👨🏻‍💻 Контакты":
                 bot.send_message(message.from_user.id, CONTACTS_MESSAGE, reply_markup=main_menu)
             elif message.text == "🚀 Сгенерировать изображение":
                 bot.send_message(message.from_user.id,
-                                 "Введите текстовый запрос\n\n *Желательно на английском языке для лучшего результата")
+                                 "Введите текстовый запрос\n\n *Желательно на английском языке для лучшего результата",
+                                 reply_markup=special_menu)
                 bot.register_next_step_handler(message, generate_img)
             else:
                 if main is None:
-                    msg = bot.send_message(message.from_user.id, "⚙️ Минутку, генерирую изображение",
-                                           reply_markup=ReplyKeyboardRemove())
-
-                    keyboard = types.InlineKeyboardMarkup()  # наша клавиатура
-                    key_cancel = types.InlineKeyboardButton(text='🕹 Сгенерировать ещё', callback_data='cancel')
-                    key_upgrade1 = types.InlineKeyboardButton(text='1️⃣ Улучшить', callback_data='upgrade1')
-                    key_upgrade2 = types.InlineKeyboardButton(text='2️⃣ Улучшить', callback_data='upgrade2')
-                    keyboard.row(key_upgrade1, key_upgrade2)
-                    keyboard.add(key_cancel)
-
+                    msg = bot.send_message(message.from_user.id, "⚙️ Минутку, генерирую изображение")
                     prompt = message.text
                     response = openai.Image.create(
                         prompt=prompt,
