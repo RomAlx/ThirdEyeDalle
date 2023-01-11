@@ -3,7 +3,7 @@ import openai
 import requests
 import os
 from telebot import types
-from telebot.types import InputMediaPhoto
+from telebot.types import InputMediaPhoto, ReplyKeyboardRemove
 
 from auth_data import Token_Bot, Secret_OpenAI
 from texts import WELCOME_MESSAGE, HELP_MESSAGE, ABOUT_MESSAGE, CONTACTS_MESSAGE, CHECK_MESSAGE
@@ -120,13 +120,6 @@ def telegram_bot(token):
 
         if check_accept(message):
 
-            keyboard = types.InlineKeyboardMarkup()  # наша клавиатура
-            key_cancel = types.InlineKeyboardButton(text='🕹 Сгенерировать ещё', callback_data='cancel')
-            key_upgrade1 = types.InlineKeyboardButton(text='1️⃣ Улучшить', callback_data='upgrade1')
-            key_upgrade2 = types.InlineKeyboardButton(text='2️⃣ Улучшить', callback_data='upgrade2')
-            keyboard.row(key_upgrade1, key_upgrade2)
-            keyboard.add(key_cancel)
-
             media_group=[]
 
             main = main_media_group.get(message.chat.id)
@@ -140,7 +133,16 @@ def telegram_bot(token):
                 bot.register_next_step_handler(message, generate_img)
             else:
                 if main is None:
-                    msg = bot.send_message(message.from_user.id, "⚙️ Минутку, генерирую изображение")
+                    msg = bot.send_message(message.from_user.id, "⚙️ Минутку, генерирую изображение",
+                                           reply_markup=ReplyKeyboardRemove())
+
+                    keyboard = types.InlineKeyboardMarkup()  # наша клавиатура
+                    key_cancel = types.InlineKeyboardButton(text='🕹 Сгенерировать ещё', callback_data='cancel')
+                    key_upgrade1 = types.InlineKeyboardButton(text='1️⃣ Улучшить', callback_data='upgrade1')
+                    key_upgrade2 = types.InlineKeyboardButton(text='2️⃣ Улучшить', callback_data='upgrade2')
+                    keyboard.row(key_upgrade1, key_upgrade2)
+                    keyboard.add(key_cancel)
+
                     prompt = message.text
                     response = openai.Image.create(
                         prompt=prompt,
