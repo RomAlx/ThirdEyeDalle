@@ -150,7 +150,7 @@ def telegram_bot(token):
                 bot.register_next_step_handler(message, generate_img)
             else:
                 if main is None:
-                    msg = bot.send_message(message.from_user.id, "⚙️ Минутку, генерирую изображение")
+                    msg = bot.send_message(message.from_user.id, "⚙️ Минутку, генерирую изображение", reply_markup=special_menu)
                     prompt = message.text
                     response = openai.Image.create(
                         prompt=prompt,
@@ -167,7 +167,6 @@ def telegram_bot(token):
                     bot.send_message(message.from_user.id,
                                      text=f'👁 {prompt}\n\n[Третий Глаз](https://t.me/+BPwAeq0kYfxkZjMy)',
                                      parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup=keyboard)
-                    bot.delete_message(message.chat.id, msg.message_id)
 
                 elif main[3] == 1:
 
