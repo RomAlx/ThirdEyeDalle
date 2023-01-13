@@ -2,11 +2,14 @@ import telebot
 import openai
 import requests
 import os
+import pymysql
+
 from telebot import types
 from telebot.types import InputMediaPhoto
 
 from auth_data import Token_Bot, Secret_OpenAI
 from texts import WELCOME_MESSAGE, HELP_MESSAGE, ABOUT_MESSAGE, CONTACTS_MESSAGE, CHECK_MESSAGE
+from config_data_base import host, user, password, db_name
 
 openai.api_key = Secret_OpenAI
 
@@ -26,6 +29,30 @@ special_menu.row(item2, item3)
 
 def telegram_bot(token):
     bot = telebot.TeleBot(token)
+
+    def db_write_data(message):
+        try:
+            connection = pymysql.connect(
+                host=host,
+                port=3306,
+                user=user,
+                password=password,
+                database=db_name,
+                cursorclass=pymysql.cursors.DictCursor
+            )
+            print("successfuly connected...")
+            try:
+                with connection.cursor() as cursor:
+                    insert_query = "INSERT INTO `user` (`user_id`, `user_prompt`) VALUES (%s, %s)"
+                    cursor.execute(insert_query, (str(message.chat.id), str(message.text)))
+                    connection.commit()
+                    print("db commited")
+            finally:
+                connection.close()
+                print("connection close")
+        except Exception as ex:
+            print("Connection refused...")
+            print(ex)
 
     def check_accept(message):
         global main_menu
@@ -150,6 +177,7 @@ def telegram_bot(token):
                 bot.register_next_step_handler(message, generate_img)
             else:
                 if main is None:
+                    db_write_data(message)
                     msg = bot.send_message(message.from_user.id, "⚙️ Минутку, генерирую изображение", reply_markup=special_menu)
                     prompt = message.text
                     response = openai.Image.create(
