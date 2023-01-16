@@ -20,12 +20,11 @@ def db_start():
         print(ex)
 
 
-async def db_write_data(message):
-
+async def db_write_data(chat_id, prompt):
         try:
             with connection.cursor() as cursor:
                 insert_query = "INSERT INTO `user` (`user_id`, `user_prompt`) VALUES (%s, %s)"
-                cursor.execute(insert_query, (str(message.chat.id), str(message.text)))
+                cursor.execute(insert_query, (str(chat_id), str(prompt)))
                 connection.commit()
                 print("db commited")
         except Exception as ex:

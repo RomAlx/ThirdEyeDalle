@@ -7,7 +7,7 @@ from open_ai import thirdeye
 
 from handlers import other
 from texts import WELCOME_MESSAGE, HELP_MESSAGE, ABOUT_MESSAGE, CONTACTS_MESSAGE, CHECK_MESSAGE, EXCEPTION_MESSAGE, \
-    GENERATE_MESSAGE, EMPTY_MESSAGE, MAIN_MESSAGE, AUTH_NO_MESSAGE, THANKS_MESSAGE, UPGRADE_MESSAGE1, UPGRADE_MESSAGE2
+    GENERATE_MESSAGE, EMPTY_MESSAGE, MAIN_MESSAGE, AUTH_NO_MESSAGE, THANKS_MESSAGE, WORK_MESSAGE
 from texts import GENERATE_BTN, ABOUT_BTN, CONTACTS_BTN
 from keyboards import KEYBOARD_WELCOME, KEYBOARD_CORRECT_AUTH, MAIN_MENU, SPECIAL_MENU
 
@@ -101,8 +101,7 @@ async def cancel(call: types.CallbackQuery):
 # @bot.callback_query_handler(text="upgrade1")
 async def upgrade1(call: types.CallbackQuery):
     try:
-        i = call.from_user.id
-        await thirdeye.upgrade_img(call, 1, i)
+        await thirdeye.upgrade_img(1, call.from_user.id)
     except Exception as ex:
         await call.message.answer(EXCEPTION_MESSAGE)
 
@@ -110,8 +109,7 @@ async def upgrade1(call: types.CallbackQuery):
 # @bot.callback_query_handler(text="upgrade2")
 async def upgrade2(call: types.CallbackQuery):
     try:
-        i = call.from_user.id
-        await thirdeye.upgrade_img(call, 2, i)
+        await thirdeye.upgrade_img(2, call.from_user.id)
     except Exception as ex:
         await call.message.answer(EXCEPTION_MESSAGE)
 
@@ -121,7 +119,7 @@ async def load_prompt(message: types.Message, state: FSMThirdEye):
     async with state.proxy() as data:
         data['prompt'] = message.text
     async with state.proxy() as data:
-        await thirdeye.generate_img(message=message, prompt=data['prompt'])
+        await thirdeye.generate_img(chat_id=message.from_user.id, prompt=data['prompt'])
     await state.finish()
 
 
