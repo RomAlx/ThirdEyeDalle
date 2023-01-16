@@ -121,6 +121,7 @@ async def load_prompt(message: types.Message, state: FSMThirdEye):
     async with state.proxy() as data:
         await thirdeye.generate_img(chat_id=message.from_user.id, prompt=data['prompt'])
     await state.finish()
+    print('total')
 
 
 

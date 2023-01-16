@@ -2,7 +2,7 @@ import openai
 import requests
 import os
 import time
-from aiogram import types, Dispatcher
+from aiogram import types
 
 import create_bot
 from data_base import mysql_db
@@ -35,11 +35,14 @@ async def generate_img(chat_id, prompt):
             await create_bot.bot.send_message(chat_id, CONTACTS_MESSAGE, reply_markup=MAIN_MENU)
         else:
             if main_media_group.get(chat_id) is None:
-                await create_bot.bot.send_message(chat_id, WORK_MESSAGE, reply_markup=SPECIAL_MENU)
                 global counter_gen
                 global counter_upd
                 global counter_all
                 global start_time
+                await create_bot.bot.send_message(chat_id, WORK_MESSAGE, reply_markup=SPECIAL_MENU)
+                await create_bot.bot.send_message(chat_id,
+                                                  WAIT_MESSAGE + str(counter_all//50+1) + ' мин',
+                                                  reply_markup=SPECIAL_MENU)
                 counter_gen = counter_gen + 1
                 counter_all = counter_gen + counter_upd
                 count = counter_gen
@@ -49,9 +52,6 @@ async def generate_img(chat_id, prompt):
                     if counter_all > 50 and time.time() - start_time < 60:
                         start_time = time.time()
                         await create_bot.bot.send_message(chat_id, WORK_MESSAGE,
-                                                          reply_markup=SPECIAL_MENU)
-                        await create_bot.bot.send_message(chat_id,
-                                                          WAIT_MESSAGE + str(counter_all / 50 + 2) + ' мин',
                                                           reply_markup=SPECIAL_MENU)
                         break
                     else:
@@ -77,6 +77,10 @@ async def generate_img(chat_id, prompt):
 
 async def upgrade_img(photo_num, chat_id):
     try:
+        if photo_num == 1:
+            await create_bot.bot.send_message(chat_id, UPGRADE_MESSAGE1, reply_markup=SPECIAL_MENU)
+        if photo_num == 2:
+            await create_bot.bot.send_message(chat_id, UPGRADE_MESSAGE2, reply_markup=SPECIAL_MENU)
         global counter_gen
         global counter_upd
         global counter_all
@@ -85,18 +89,14 @@ async def upgrade_img(photo_num, chat_id):
         counter_all = counter_gen + counter_upd
         count = counter_upd
         queue_upd.append([photo_num, chat_id])
-        if photo_num == 1:
-            await create_bot.bot.send_message(chat_id, UPGRADE_MESSAGE1, reply_markup=SPECIAL_MENU)
-        if photo_num == 2:
-            await create_bot.bot.send_message(chat_id, UPGRADE_MESSAGE2, reply_markup=SPECIAL_MENU)
         for i in range(count):
             if counter_all > 50 and time.time() - start_time < 60:
-                await create_bot.bot.send_message(chat_id,
-                                                  WAIT_MESSAGE + str(counter_all // 50 + 2) + ' мин',
-                                                  reply_markup=SPECIAL_MENU)
                 start_time = time.time()
                 break
             else:
+                await create_bot.bot.send_message(chat_id,
+                                                  WAIT_MESSAGE + str(counter_all//50+1) + ' мин',
+                                                  reply_markup=SPECIAL_MENU)
                 counter_gen = counter_gen - 1
                 counter_all = counter_all - 1
                 upd = queue_upd.pop(0)
@@ -104,7 +104,6 @@ async def upgrade_img(photo_num, chat_id):
                 with open(f'img/{upd[1]}.png', 'wb') as f:
                     f.write(r.content)
                 prompt = main_media_group[upd[1]][0]
-                print(prompt)
                 main_media_group[upd[1]] = None
                 response = openai.Image.create_variation(
                     image=open(f'img/{upd[1]}.png', 'rb'),
@@ -113,7 +112,6 @@ async def upgrade_img(photo_num, chat_id):
                 )
                 os.remove(f'img/{upd[1]}.png')
                 image_url = response['data'][0]['url']
-                print(image_url)
                 await create_bot.bot.send_photo(chat_id=upd[1], photo=image_url,
                                caption=f'👁 {prompt}\n\n[Третий Глаз](https://t.me/+BPwAeq0kYfxkZjMy)',
                                parse_mode='MarkdownV2', reply_markup=MAIN_MENU)
