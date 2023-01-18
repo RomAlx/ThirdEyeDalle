@@ -48,11 +48,9 @@ async def generate_img(chat_id, prompt):
                 count = counter_gen
                 queue_gen.append([chat_id, prompt])
                 await mysql_db.db_write_data(chat_id, prompt)
-                for i in range(count):
+                while len(queue_gen) > 0:
                     if counter_all > 50 and time.time() - start_time < 60:
                         start_time = time.time()
-                        await create_bot.bot.send_message(chat_id, WORK_MESSAGE,
-                                                          reply_markup=SPECIAL_MENU)
                         break
                     else:
                         counter_gen = counter_gen - 1
@@ -61,7 +59,7 @@ async def generate_img(chat_id, prompt):
                         response = openai.Image.create(
                             prompt=gen[1],
                             n=2,
-                            size="1024x1024"
+                            size="256x256"
                         )
                         media = types.MediaGroup()
                         media.attach_photo(response['data'][0]['url'])
@@ -89,7 +87,7 @@ async def upgrade_img(photo_num, chat_id):
         counter_all = counter_gen + counter_upd
         count = counter_upd
         queue_upd.append([photo_num, chat_id])
-        for i in range(count):
+        while len(queue_upd)>0:
             if counter_all > 50 and time.time() - start_time < 60:
                 start_time = time.time()
                 break
@@ -108,7 +106,7 @@ async def upgrade_img(photo_num, chat_id):
                 response = openai.Image.create_variation(
                     image=open(f'img/{upd[1]}.png', 'rb'),
                     n=1,
-                    size="1024x1024"
+                    size="256x256"
                 )
                 os.remove(f'img/{upd[1]}.png')
                 image_url = response['data'][0]['url']
