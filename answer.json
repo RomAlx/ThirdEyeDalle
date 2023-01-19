@@ -1,0 +1,24 @@
+{
+  "update_id": 188256445,
+  "message": {
+    "message_id": 477,
+    "from": {
+      "id": 324354843,
+      "is_bot": false,
+      "first_name": "\u0410\u043b\u0435\u043a\u0441\u0435\u0439",
+      "last_name": "\u0420\u043e\u043c\u0430\u043d\u043e\u0432\u0441\u043a\u0438\u0439",
+      "username": "AlekseyRomanovsky",
+      "language_code": "ru",
+      "is_premium": true
+    },
+    "chat": {
+      "id": 324354843,
+      "first_name": "\u0410\u043b\u0435\u043a\u0441\u0435\u0439",
+      "last_name": "\u0420\u043e\u043c\u0430\u043d\u043e\u0432\u0441\u043a\u0438\u0439",
+      "username": "AlekseyRomanovsky",
+      "type": "private"
+    },
+    "date": 1674132653,
+    "text": "2\ufe0f\u20e3 \u0423\u043b\u0443\u0447\u0448\u0438\u0442\u044c"
+  }
+}

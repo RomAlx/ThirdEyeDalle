@@ -7,8 +7,8 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     container_name: dalle-bot
-    command: python bot.py
+    command: python main.py
     ports:
-      - "591:591"
+      - "8443:8443"
     volumes:
       - ./:/usr/src/dalle-bot

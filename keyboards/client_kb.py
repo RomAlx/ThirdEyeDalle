@@ -17,14 +17,21 @@ btn_up2 = types.InlineKeyboardButton(text=UP2_BTN, callback_data='upgrade2')
 KEYBOARD_WORK.row(btn_up1, btn_up2)
 KEYBOARD_WORK.add(btn_cancel)
 
+
 btn_gen = types.KeyboardButton(GENERATE_BTN)
 btn_about = types.KeyboardButton(ABOUT_BTN)
 btn_contacts = types.KeyboardButton(CONTACTS_BTN)
+btn_cancel = types.KeyboardButton(CANCEL_BTN)
+btn_up1 = types.KeyboardButton(UP1_BTN)
+btn_up2 = types.KeyboardButton(UP2_BTN)
+
 
 MAIN_MENU = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 MAIN_MENU.add(btn_gen)
 MAIN_MENU.row(btn_about, btn_contacts)
 
 SPECIAL_MENU = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+SPECIAL_MENU.row(btn_up1, btn_up2)
+SPECIAL_MENU.add(btn_cancel)
 SPECIAL_MENU.row(btn_about, btn_contacts)
 

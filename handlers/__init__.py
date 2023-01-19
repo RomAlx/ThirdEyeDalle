@@ -1,3 +1,1 @@
-from handlers import client
-from handlers import admin
-from handlers import other
+from handlers.handlers import message_handler
