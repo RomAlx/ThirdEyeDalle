@@ -17,11 +17,11 @@ print(sys.prefix)
 
 bot = Bot(token=TOKEN_BOT)
 
-application = Flask(__name__)
-sslify = SSLify(application)
+app = Flask(__name__)
+sslify = SSLify(app)
 
 
-@application.route(('/'+TOKEN_BOT), methods=['POST', 'GET'])
+@app.route(('/'), methods=['POST', 'GET'])
 async def index():
     if request.method == 'POST':
         r = request.get_json()
@@ -32,4 +32,4 @@ async def index():
 
 if __name__ == '__main__':
     mysql_db.db_start()
-    application.run(host='0.0.0.0')
+    app.run(host='0.0.0.0')
