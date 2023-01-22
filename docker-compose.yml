@@ -9,6 +9,6 @@ services:
     container_name: dalle-bot
     command: python main.py
     ports:
-      - "8443:8443"
+      - "593:593"
     volumes:
       - ./:/usr/src/dalle-bot
