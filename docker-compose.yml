@@ -1,23 +1,14 @@
 version: "3"
 
 services:
-  web:
+  webapp:
     build:
       context: ./
       dockerfile: Dockerfile
     restart: unless-stopped
     container_name: dalle-bot
-    command: python main.py
+    command: python bot.py
     ports:
-      - "5000:5000"
+      - "591:591"
     volumes:
       - ./:/usr/src/dalle-bot
-
-  ngnix:
-    image: nginx:latest
-    volumes:
-      - ./nginx.conf:/etc/nginx.conf:ro
-    depends_on:
-      - app
-    ports:
-      - "80:80"
